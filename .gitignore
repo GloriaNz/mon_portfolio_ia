@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+/instance/*
+!/instance/.gitkeep
+
+/static/uploads/*
+!/static/uploads/CV_2026-10-15_Gloria_NZIENGI.pdf
+!/static/uploads/profile_c8820cf3b0addf2b_gloria.jpg

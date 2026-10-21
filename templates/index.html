@@ -1,377 +1,80 @@
-<!DOCTYPE html>
-<html lang="{{ current_lang }}" class="">
+<!doctype html>
+<html lang="{{ lang }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gloria Nziengi - Portfolio AI Dev</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            light: '#2563eb',
-                            dark: '#60a5fa'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Three.js from CDN for 3D Background -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        #canvas3d {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-    </style>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ data.profile.name }} — {{ 'AI Developer' if lang == 'en' else 'Développeuse IA' }}</title>
+  <meta name="description" content="{{ data.profile.tagline_fr if lang == 'fr' else data.profile.tagline_en }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 font-sans">
-
-    <!-- 3D Background Canvas -->
-    <canvas id="canvas3d"></canvas>
-
-    <!-- Header / Navbar -->
-    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex-shrink-0">
-                    <span class="text-xl font-bold tracking-wider text-blue-600 dark:text-blue-400">G.NZ</span>
-                </div>
-                
-                <div class="flex items-center space-x-6">
-                    <!-- Nav links (hidden on mobile) -->
-                    <div class="hidden md:flex space-x-4">
-                        <a href="#about" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{{ content.nav_about }}</a>
-                        <a href="#skills" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{{ content.nav_skills }}</a>
-                        <a href="#projects" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{{ content.nav_projects }}</a>
-                        <a href="#contact" class="hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">{{ content.nav_contact }}</a>
-                    </div>
-
-                    <!-- Language Switcher -->
-                    <div class="flex space-x-1 border border-slate-300 dark:border-slate-700 rounded-lg p-0.5">
-                        <a href="{{ url_for('set_language', lang='fr') }}" class="px-2 py-1 text-xs rounded {% if current_lang == 'fr' %}bg-blue-600 text-white{% else %}hover:bg-slate-200 dark:hover:bg-slate-800{% endif %}">FR</a>
-                        <a href="{{ url_for('set_language', lang='en') }}" class="px-2 py-1 text-xs rounded {% if current_lang == 'en' %}bg-blue-600 text-white{% else %}hover:bg-slate-200 dark:hover:bg-slate-800{% endif %}">EN</a>
-                    </div>
-
-                    <!-- Dark Mode Toggle -->
-                    <button id="themeToggle" class="p-2 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
-                        <!-- Sun Icon -->
-                        <svg id="sunIcon" class="hidden h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14.25 12a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                        </svg>
-                        <!-- Moon Icon -->
-                        <svg id="moonIcon" class="hidden h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="min-h-[85vh] flex items-center justify-center py-12">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            
-            <!-- Photo Space -->
-            <div class="relative flex justify-center items-center mb-8">
-                <div class="absolute w-44 h-44 rounded-full bg-blue-500/20 blur-2xl dark:bg-blue-400/10"></div>
-                <div class="relative w-36 h-36 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-2xl transition-all duration-300 hover:scale-105">
-                    <!-- Photo placeholder or actual if uploaded -->
-                    <img id="profilePhoto" src="{{ url_for('static', filename='images/gloria.png') }}" 
-                         alt="Gloria Nziengi" 
-                         onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=gloria'"
-                         class="w-full h-full object-cover">
-                </div>
-            </div>
-
-            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">
-                    {{ content.hero_title }}
-                </span>
-            </h1>
-            <p class="text-lg sm:text-xl font-semibold text-slate-600 dark:text-slate-300 mb-2">
-                {{ content.hero_subtitle }}
-            </p>
-            <p class="text-base max-w-2xl mx-auto text-slate-500 dark:text-slate-400 mb-8">
-                {{ content.hero_tagline }}
-            </p>
-
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <a href="{{ url_for('download_cv') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
-                    <svg class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    {{ content.download_cv }}
-                </a>
-                <a href="#contact" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-slate-300 dark:border-slate-700 text-base font-medium rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200">
-                    {{ content.nav_contact }}
-                </a>
-            </div>
-        </div>
-    </header>
-
-    <!-- About Section -->
-    <section id="about" class="py-20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-y border-slate-200 dark:border-slate-800">
-        <div class="max-w-4xl mx-auto px-4">
-            <h2 class="text-3xl font-extrabold text-center mb-10">{{ content.about_title }}</h2>
-            <div class="prose prose-lg dark:prose-invert text-slate-600 dark:text-slate-300 space-y-6 text-center max-w-3xl mx-auto">
-                <p>{{ content.about_text_1 }}</p>
-                <p>{{ content.about_text_2 }}</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Skills Section -->
-    <section id="skills" class="py-20">
-        <div class="max-w-5xl mx-auto px-4">
-            <h2 class="text-3xl font-extrabold text-center mb-12">{{ content.skills_title }}</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <!-- Skill Card 1: IA/ML -->
-                <div class="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                    <div class="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">{{ content.skills_ai_ml }}</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">{{ content.skills_ai_desc }}</p>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">Scikit-Learn</span>
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">TensorFlow</span>
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">NLP</span>
-                    </div>
-                </div>
-
-                <!-- Skill Card 2: Web Python -->
-                <div class="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                    <div class="h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">{{ content.skills_web }}</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">{{ content.skills_web_desc }}</p>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">Python</span>
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">Flask</span>
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">SQL/Postgres</span>
-                    </div>
-                </div>
-
-                <!-- Skill Card 3: Data -->
-                <div class="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                    <div class="h-12 w-12 rounded-xl bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-4">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">{{ content.skills_data }}</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">{{ content.skills_data_desc }}</p>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">Pandas</span>
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">NumPy</span>
-                        <span class="px-2.5 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-md">Matplotlib</span>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section id="projects" class="py-20 bg-slate-100/50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800 backdrop-blur-sm">
-        <div class="max-w-5xl mx-auto px-4">
-            <h2 class="text-3xl font-extrabold text-center mb-12">{{ content.projects_title }}</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                
-                <!-- CVBoost Card -->
-                <div class="flex flex-col justify-between p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">{{ content.project_cvboost_title }}</h3>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">{{ content.project_cvboost_desc }}</p>
-                    </div>
-                    <a href="https://github.com/GloriaNz" target="_blank" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center">
-                        {{ content.project_link_github }}
-                        <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-
-                <!-- MOASIS TECH Card (Projet en cours)-->
-                <div class="flex flex-col justify-between p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">{{ content.project_moasis_title }}</h3>
-                        <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">{{ content.project_moasis_desc }}</p>
-                    </div>
-                    <a href="https://github.com/GloriaNz" target="_blank" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center">
-                        {{ content.project_link_github }}
-                        <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-20">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-4">{{ content.contact_title }}</h2>
-            <p class="text-lg text-slate-600 dark:text-slate-400 mb-10">{{ content.contact_subtitle }}</p>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                <!-- LinkedIn -->
-                <a href="https://www.linkedin.com/in/gloria-nziengi" target="_blank" rel="noopener noreferrer"
-                   class="flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-                    <svg class="h-10 w-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                    </svg>
-                    <span class="mt-4 font-semibold text-sm">{{ content.visit_linkedin }}</span>
-                </a>
-
-                <!-- WhatsApp -->
-                <a href="https://wa.me/243997924970?text={{ content.whatsapp_message|urlencode }}" target="_blank" rel="noopener noreferrer"
-                   class="flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-                    <svg class="h-10 w-10 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.717-1.454L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.413 9.863-9.83.001-2.624-1.023-5.091-2.885-6.957C16.584 1.96 14.121.933 11.51.933c-5.44 0-9.866 4.415-9.869 9.833-.001 1.777.469 3.511 1.36 5.054L1.93 21.67l6.009-1.574-.292.158z"/>
-                    </svg>
-                    <span class="mt-4 font-semibold text-sm">{{ content.chat_whatsapp }}</span>
-                </a>
-
-                <!-- Phone -->
-                <a href="tel:+243997924970"
-                   class="flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-                    <svg class="h-10 w-10 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                    </svg>
-                    <span class="mt-4 font-semibold text-sm">{{ content.call_me }}</span>
-                    <span class="text-xs text-slate-500 mt-1">+243 997924970</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-8 border-t border-slate-200 dark:border-slate-800 text-center text-sm text-slate-500">
-        <p>&copy; 2026 Gloria Nziengi. All rights reserved.</p>
-    </footer>
-
-    <!-- Three.js 3D Constellation Animation Code -->
-    <script>
-        // 1. Theme Management (Light / Dark)
-        const html = document.documentElement;
-        const themeToggle = document.getElementById('themeToggle');
-        const sunIcon = document.getElementById('sunIcon');
-        const moonIcon = document.getElementById('moonIcon');
-
-        function updateTheme() {
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                html.classList.add('dark');
-                sunIcon.classList.remove('hidden');
-                moonIcon.classList.add('hidden');
-            } else {
-                html.classList.remove('dark');
-                sunIcon.classList.add('hidden');
-                moonIcon.classList.remove('hidden');
-            }
-        }
-
-        themeToggle.addEventListener('click', () => {
-            if (html.classList.contains('dark')) {
-                localStorage.theme = 'light';
-            } else {
-                localStorage.theme = 'dark';
-            }
-            updateTheme();
-            // Update 3D Background colors on theme switch
-            if (window.updateBgColor) window.updateBgColor();
-        });
-
-        // Init Theme
-        updateTheme();
-
-
-        // 2. Three.js 3D Background Setup
-        const canvas = document.getElementById('canvas3d');
-        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.z = 30;
-
-        // Create particles geometry
-        const particlesCount = 120;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particlesCount * 3);
-
-        for (let i = 0; i < particlesCount * 3; i++) {
-            positions[i] = (Math.random() - 0.5) * 60; // Spread points
-        }
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-        // Point Texture & Material
-        const material = new THREE.PointsMaterial({
-            size: 0.25,
-            transparent: true,
-            opacity: 0.6
-        });
-
-        // Dynamic Background color adaptation
-        window.updateBgColor = function() {
-            const isDark = html.classList.contains('dark');
-            material.color.setHex(isDark ? 0x60a5fa : 0x2563eb); // Blue-400 for dark, Blue-600 for light
-        };
-        window.updateBgColor();
-
-        const points = new THREE.Points(geometry, material);
-        scene.add(points);
-
-        // Interaction on Mouse Move
-        let mouseX = 0, mouseY = 0;
-        document.addEventListener('mousemove', (event) => {
-            mouseX = (event.clientX - window.innerWidth / 2) * 0.05;
-            mouseY = (event.clientY - window.innerHeight / 2) * 0.05;
-        });
-
-        // Animation Loop
-        const animate = () => {
-            requestAnimationFrame(animate);
-            
-            points.rotation.y += 0.001;
-            points.rotation.x += 0.0005;
-
-            // Smooth ease towards mouse pointer
-            camera.position.x += (mouseX - camera.position.x) * 0.05;
-            camera.position.y += (-mouseY - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
-
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        // Responsive window resizing
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
-</body>
-</html>
+<body data-theme="light">
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">G.</span><span><b>Gloria<span class="accent">.Dev</span></b><small>AI Developer · Python · Flask · FastAPI</small></span></a>
+  <nav class="navlinks"><a href="#home">{{ 'Home' if lang == 'en' else 'Accueil' }}</a><a href="#about">{{ 'About' if lang == 'en' else 'À propos' }}</a><a href="#skills">{{ 'Skills' if lang == 'en' else 'Compétences' }}</a><a href="#projects">{{ 'Projects' if lang == 'en' else 'Projets' }}</a><a href="#journey">{{ 'Journey' if lang == 'en' else 'Parcours' }}</a><a href="#contact">{{ 'Contact' if lang == 'en' else 'Contact' }}</a></nav>
+  <div class="top-actions">
+    <a class="lang-toggle" href="{{ url_for('index', lang='fr' if lang == 'en' else 'en') }}">{{ 'FR / EN' if lang == 'fr' else 'EN / FR' }}</a>
+    <button class="icon-btn" id="themeToggle" aria-label="Changer de thème">◐</button>
+  </div>
+</header>
+<main>
+<section class="hero section-wrap" id="home">
+  <div class="intro-col">
+    <p class="eyebrow">{{ 'BACKEND DEVELOPMENT · ARTIFICIAL INTELLIGENCE' if lang == 'en' else 'DÉVELOPPEMENT BACKEND · INTELLIGENCE ARTIFICIELLE' }}</p>
+    <div class="hero-identity">
+      <div class="portrait-ring">
+        {% if data.profile.photo %}<img src="{{ url_for('uploaded_file', filename=data.profile.photo) }}" alt="{{ 'Gloria NZIENGI profile photo' if lang == 'en' else 'Photo de profil de Gloria NZIENGI' }}">{% else %}<div class="portrait-placeholder"><span>GN</span><small>{{ 'YOUR PHOTO' if lang == 'en' else 'VOTRE PHOTO' }}</small></div>{% endif %}
+      </div>
+      <p class="handwritten">{{ 'Building useful technology with AI' if lang == 'en' else 'Concevoir des solutions numériques utiles' }}</p>
+      <h1>{{ data.profile.name }}<span class="hero-period">.</span></h1>
+    </div>
+    <div class="hero-meta"><div class="role-pill"><span class="status-dot"></span> {{ 'BACKEND & AI DEVELOPER' if lang == 'en' else 'DÉVELOPPEUSE BACKEND & IA' }}</div></div>
+    <h2>{{ data.profile.title_en if lang == 'en' else data.profile.title_fr }} <span class="gradient-text">| Python · Flask · FastAPI</span></h2>
+    <p class="lead">{{ data.profile.bio_en if lang == 'en' else data.profile.bio_fr }}</p>
+    <p class="tagline">{{ data.profile.tagline_en if lang == 'en' else data.profile.tagline_fr }}</p>
+    <div class="hero-buttons">
+      <a class="btn btn-primary" href="{{ url_for('view_cv') }}" target="_blank" rel="noopener">{{ 'View my CV' if lang == 'en' else 'Voir mon CV' }}</a>
+      <a class="btn btn-outline" href="{{ url_for('download_cv') }}">{{ 'Download my CV' if lang == 'en' else 'Télécharger mon CV' }}</a>
+      <a class="btn btn-ghost" href="#contact">{{ 'Contact me' if lang == 'en' else 'Me contacter' }}</a>
+    </div>
+    <div class="social-row">
+      <a href="{{ data.profile.github }}" target="_blank" rel="noopener">GitHub ↗</a>
+      <a href="{{ data.profile.linkedin }}" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a href="https://wa.me/{{ data.profile.whatsapp|replace(' ','')|replace('+','') }}" target="_blank" rel="noopener">WhatsApp ↗</a>
+      <a href="mailto:{{ data.profile.email }}">Email ↗</a>
+    </div>
+  </div>
+  <div class="demo-col">
+    <div class="code-window">
+      <div class="window-top"><span class="window-dots"><i></i><i></i><i></i></span><span>portfolio.py</span><span class="window-min">— □ ×</span></div>
+      <pre id="codeDisplay" aria-label="Animated Python code"></pre>
+      <div class="window-status"><span>●</span> {{ 'AI service ready' if lang == 'en' else 'Service IA prêt' }} <b>Python</b></div>
+    </div>
+    <div class="mini-chat" id="chatWidget">
+      <div class="chat-head"><span class="bot-icon">✺</span><span><b>AI Assistant</b><small>● {{ 'Online' if lang == 'en' else 'En ligne' }}</small></span><button id="chatMinimize" aria-label="Réduire">−</button></div>
+      <div class="chat-body" id="chatBody"><div class="bubble bot">{{ 'Hello! I am Gloria’s portfolio assistant. Ask me about her projects, skills, experience or CV.' if lang == 'en' else 'Bonjour ! Je suis l’assistant IA du portfolio de Gloria. Pose-moi tes questions sur ses projets, ses compétences, son parcours ou son CV.' }}</div></div>
+      <form id="chatForm" class="chat-form"><input id="chatInput" placeholder="{{ 'Ask a question…' if lang == 'en' else 'Pose-moi une question…' }}" autocomplete="off"><button type="submit" aria-label="Envoyer">➤</button></form>
+      <div class="chat-hints"><button data-question="{{ 'What are her projects?' if lang == 'en' else 'Quels sont ses projets ?' }}">{{ 'Projects' if lang == 'en' else 'Mes projets' }}</button><button data-question="{{ 'What are her skills?' if lang == 'en' else 'Quelles sont ses compétences ?' }}">{{ 'Skills' if lang == 'en' else 'Compétences' }}</button><button data-question="{{ 'How can I view her CV?' if lang == 'en' else 'Comment voir son CV ?' }}">CV</button></div>
+    </div>
+  </div>
+</section>
+<section class="stats section-wrap">
+  <div><span class="stat-icon">01</span><span><b>3+</b><small>{{ 'Projects & MVPs' if lang == 'en' else 'Projets & MVP réalisés' }}</small></span></div>
+  <div><span class="stat-icon">02</span><span><b>{{ 'Continuous learning' if lang == 'en' else 'Apprentissage continu' }}</b><small>{{ 'AI & cloud training' if lang == 'en' else 'Formation IA & cloud' }}</small></span></div>
+  <div><span class="stat-icon">03</span><span><b>Python · Flask · FastAPI</b><small>{{ 'Core technologies' if lang == 'en' else 'Technologies principales' }}</small></span></div>
+  <div><span class="stat-icon">04</span><span><b>{{ 'Ready for challenges' if lang == 'en' else 'Prête pour les défis' }}</b><small>{{ 'Building useful solutions' if lang == 'en' else 'Créer des solutions utiles' }}</small></span></div>
+</section>
+<section class="content-grid section-wrap" id="about">
+  <div class="about-card panel"><h3><span></span>{{ 'About me' if lang == 'en' else 'À propos de moi' }}</h3><p>{{ data.profile.bio_en if lang == 'en' else data.profile.bio_fr }}</p><p>{{ 'I enjoy learning, solving problems and contributing to useful digital products.' if lang == 'en' else 'J’aime apprendre, résoudre des problèmes et contribuer à des produits numériques utiles.' }}</p><a class="text-link" href="#journey">{{ 'Explore my journey' if lang == 'en' else 'Découvrir mon parcours' }} ↗</a></div>
+  <div class="skills-card panel" id="skills"><h3><span></span>{{ 'Technical skills' if lang == 'en' else 'Mes compétences' }}</h3><p class="muted">{{ 'Tools and technologies I work with' if lang == 'en' else 'Technologies et outils que j’utilise' }}</p><div class="skill-grid">{% for skill in data.skills %}<div class="skill-tile"><span class="skill-symbol">{{ ['Py','Fl','API','DB','SQL','DK','Git','ML','NLP','ETL'][loop.index0 % 10] }}</span><b>{{ skill.name }}</b><small>{{ skill.detail_en if lang == 'en' else skill.detail_fr }}</small></div>{% endfor %}</div></div>
+</section>
+<section class="section-wrap projects-section" id="projects"><div class="section-heading"><div><h3><span></span>{{ 'Selected projects' if lang == 'en' else 'Mes projets' }}</h3><p>{{ 'Practical solutions in AI and backend development' if lang == 'en' else 'Des solutions concrètes en IA et développement backend' }}</p></div></div>
+  <div class="project-grid">{% for project in projects %}<article class="project-card">{% set project_key = (project.id ~ ' ' ~ project.title)|lower %}{% if 'cvboost' in project_key %}<div class="project-cover"><img src="{{ url_for('static', filename='projects/cvboost.png') }}" alt="Interface réelle du projet CVBoost" loading="lazy"></div>{% elif 'transcript' in project_key or 'transcription' in project_key %}<div class="project-cover"><img src="{{ url_for('static', filename='projects/gloria-transcript.png') }}" alt="Interface réelle de Gloria Transcript" loading="lazy"></div>{% elif 'drh' in project_key or 'interview' in project_key or 'entretien' in project_key %}<div class="project-cover"><img src="{{ url_for('static', filename='projects/ia-drh.png') }}" alt="Interface réelle du projet IA DRH" loading="lazy"></div>{% elif project.image %}<div class="project-cover"><img src="{{ url_for('uploaded_file', filename=project.image) }}" alt="Capture de {{ project.title }}" loading="lazy"></div>{% endif %}<div class="project-top"><span class="project-symbol">CASE STUDY</span><span class="project-year">{{ project.year }}</span></div><div class="project-type">{{ project.category }}</div><h4>{{ project.title }}</h4><p>{{ project.description_en if lang == 'en' else project.description_fr }}</p><div class="tags">{% for tech in project.stack.split(',') %}<span>{{ tech.strip() }}</span>{% endfor %}</div><div class="project-links">{% if project.demo %}<a href="{{ project.demo }}" target="_blank" rel="noopener">{{ 'Live demo' if lang == 'en' else 'Démo' }} ↗</a>{% endif %}{% if project.github %}<a href="{{ project.github }}" target="_blank" rel="noopener">GitHub ↗</a>{% endif %}{% if not project.demo and not project.github %}<span class="muted">{{ 'Details available on request' if lang == 'en' else 'Détails disponibles sur demande' }}</span>{% endif %}</div></article>{% endfor %}</div>
+</section>
+<section class="journey-section section-wrap" id="journey"><div class="panel"><h3><span></span>{{ 'Education & training' if lang == 'en' else 'Parcours & formations' }}</h3><div class="timeline">{% for item in data.education %}<div class="timeline-item"><span class="timeline-dot"></span><div><h4>{{ item.title_en if lang == 'en' else item.title_fr }}</h4><b>{{ item.org }}</b><small>{{ item.period }}</small><p>{{ item.detail_en if lang == 'en' else item.detail_fr }}</p></div></div>{% endfor %}</div></div>
+  <div class="panel"><h3><span></span>{{ 'Professional experience' if lang == 'en' else 'Expérience professionnelle' }}</h3>{% for item in data.experience %}<div class="experience-item"><h4>{{ item.title_en if lang == 'en' else item.title_fr }}</h4><small>{{ item.period }}</small><p>{{ item.detail_en if lang == 'en' else item.detail_fr }}</p></div>{% endfor %}<div class="mini-panels"><div><h4>{{ 'Languages' if lang == 'en' else 'Langues' }}</h4>{% for item in (data.languages_en if lang == 'en' else data.languages_fr) %}<p>{{ item }}</p>{% endfor %}</div><div><h4>{{ 'Strengths' if lang == 'en' else 'Atouts' }}</h4>{% for item in (data.strengths_en if lang == 'en' else data.strengths_fr) %}<p>{{ item }}</p>{% endfor %}</div></div></div>
+</section>
+<section class="contact-section section-wrap" id="contact"><div><p class="eyebrow">{{ 'LET’S BUILD SOMETHING' if lang == 'en' else 'CRÉONS QUELQUE CHOSE' }}</p><h2>{{ 'Have a project in mind?' if lang == 'en' else 'Un projet en tête ?' }}</h2><p>{{ 'I’m open to opportunities, collaboration and meaningful challenges.' if lang == 'en' else 'Je suis ouverte aux opportunités, collaborations et défis stimulants.' }}</p></div><div class="contact-actions"><a class="btn btn-primary" href="mailto:{{ data.profile.email }}">{{ data.profile.email }}</a><a class="btn btn-outline" href="https://wa.me/{{ data.profile.whatsapp|replace(' ','')|replace('+','') }}" target="_blank" rel="noopener">WhatsApp ↗</a></div></section>
+</main>
+<footer class="footer section-wrap"><span>© {{ year_now }} Gloria.Dev</span><span>{{ 'Designed with Python, curiosity and AI.' if lang == 'en' else 'Conçu avec Python, curiosité et IA.' }}</span></footer>
+<div class="flash-stack">{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}</div>
+<script>window.PORTFOLIO_LANG={{ lang|tojson }};</script><script src="{{ url_for('static', filename='js/site.js') }}"></script>
+</body></html>
